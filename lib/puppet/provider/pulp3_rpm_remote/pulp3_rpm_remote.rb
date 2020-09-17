@@ -25,10 +25,8 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
         remote = build_hash(object)
         parsed_objects << remote
       end
-      context.notice("Retrieved the following parsed objects: #{parsed_objects}")
+      context.debug("Retrieved the following resources: #{parsed_objects}")
       @property_hash = parsed_objects
-    else
-      context.notice("Using cache")
     end
     @property_hash
   end
@@ -48,11 +46,11 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
              'url'       => should[:url], 
     }
     begin
-      context.notice("The uri is #{@uri}#{@endpoint}")
+      context.debug("The uri is #{@uri}#{@endpoint}")
       response = RestClient.post "#{@uri}#{@endpoint}",
         data.to_json,
         { content_type: :json, accept: :json }
-      context.notice("The REST API Post response is #{JSON.parse(response)}")
+      context.debug("The REST API Post response is #{JSON.parse(response)}")
     rescue StandardError => e
       context.err("The response to the request was '#{JSON.parse(response)}'")
       context.err("Creating remote '#{name}' failed with: #{e}")
@@ -60,7 +58,7 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
   end
 
   def update(context, name, should)
-    context.notice("Updating '#{name}' with #{should.inspect}")
+    context.debug("Updating '#{name}' with #{should.inspect}")
     pulp_href = get_pulp_href(name, context)
     data = { 'name' => should[:name],
              'url'  => should[:url], }
@@ -69,20 +67,20 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
         data.to_json,
         { content_type: :json, accept: :json }
       response = JSON.parse(res)
-      context.notice("Object #{name} motified with following task: #{response}")
+      context.debug("Object #{name} motified with following task: #{response}")
     rescue StandardError => e
       context.err("Updating remote '#{name}' failed with: #{e}")
     end
   end
 
   def delete(context, name)
-    context.notice("Deleting '#{name}'")
+    context.debug("Deleting '#{name}'")
     pulp_href = get_pulp_href(name, context)
     begin
       res = RestClient.delete "#{@uri}#{pulp_href}",
         { content_type: :json, accept: :json }
       response = JSON.parse(res)
-      context.notice("Object deleted with following task: #{response}")
+      context.debug("Object deleted with following task: #{response}")
     rescue StandardError => e
       context.err("Deleting remote '#{name}' failed with: #{e}")
     end
@@ -93,8 +91,8 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
       res = RestClient.get "#{@uri}#{@endpoint}",
         { content_type: :json, accept: :json }
       response = JSON.parse(res)
-      context.notice("Number of objects found: '#{response['count']}'")
-      context.notice("Found objects: '#{JSON.pretty_generate(response['results'])}'")
+      context.debug("Number of objects found: '#{response['count']}'")
+      context.debug("Found objects: '#{JSON.pretty_generate(response['results'])}'")
       return [] if response['count'] == '0'
       objects = response['results']
     rescue StandardError => e
