@@ -15,37 +15,38 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     @apiport = '24817'
     @uri = "http://#{@apiuser}:#{@apipass}@#{@apihost}:#{@apiport}"
     @endpoint = '/pulp/api/v3/remotes/rpm/rpm/'
+    @property_hash = []
   end
 
   def get(context)
-    objects = get_pulp_objects(context)
-    context.debug("Entered get")
-    context.debug("Following objects were retrieved: #{objects}")
-    parsed_objects = []
-    objects.each do |object|
-      remote = parse_object(object)
-      parsed_objects << remote
+    if @property_hash.empty?
+      parsed_objects = []
+      get_pulp_objects(context).each do |object|
+        remote = build_hash(object)
+        parsed_objects << remote
+      end
+      context.notice("Retrieved the following parsed objects: #{parsed_objects}")
+      @property_hash = parsed_objects
+    else
+      context.notice("Using cache")
     end
-    context.notice("Parsed objects are: #{parsed_objects}")
-    parsed_objects
+    @property_hash
   end
 
-  def parse_object(object)
+  def build_hash(object)
     hash = {}
     hash[:ensure] = 'present'
     hash[:name] = object['name']
     hash[:url] = object['url']
+    hash[:pulp_href] = object['pulp_href']
     hash
   end
 
-  def name?(object)
-    !object['name'].nil? && !object['name'].empty?
-  end
-
   def create(context, name, should)
-    context.notice("Creating '#{name}' with #{should.inspect}")
-    data = { 'name' => should[:name],
-             'url'  => should[:url], }
+    context.debug("Creating '#{name}' with #{should.inspect}")
+    data = { 'name'      => should[:name],
+             'url'       => should[:url], 
+    }
     begin
       context.notice("The uri is #{@uri}#{@endpoint}")
       response = RestClient.post "#{@uri}#{@endpoint}",
@@ -87,7 +88,6 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     end
   end
 
-  # Custom fuctions
   def get_pulp_objects(context)
     begin
       res = RestClient.get "#{@uri}#{@endpoint}",
@@ -103,17 +103,15 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     end
     objects
   end
+
   def get_pulp_href(name, context)
-    context.notice("Getting pulp href of '#{name}'")
-    begin
-      res = RestClient.get "#{@uri}#{@endpoint}?name=#{name}",
-        { content_type: :json, accept: :json }
-      response = JSON.parse(res)
-      pulp_href = response['results'][0]['pulp_href']
-      context.notice("The pulp href of #{name} is #{pulp_href}")
-    rescue StandardError => e
-      context.err("Error getting pulp href of object: '#{e}'")
-    end 
-    pulp_href
+    @property_hash.each do |property|
+      if property[:name] == name
+        context.debug("Found pulp_href of #{name}: #{property[:pulp_href]}")
+        return property[:pulp_href]
+      end
+    end
+    context.err("Pulp_href not found for #{name}")
+    return nil
   end
 end

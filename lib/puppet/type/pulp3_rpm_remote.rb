@@ -29,5 +29,10 @@ EOS
       type:       'String',
       desc:       'The URL of an external content source.',
     },
+    pulp_href: {
+      type:       'String',
+      desc:       'The Pulp href',
+      behaviour:  :read_only,
+    },
   },
 )
