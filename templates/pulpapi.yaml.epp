@@ -1,0 +1,11 @@
+<%- | String       $apiuser = 'admin',
+      String       $apipass = 'admin',
+      Stdlib::Fqdn $apihost = $facts['networking']['fqdn'],
+      Stdlib::Port $apiport = 24817,
+| -%>
+---
+# Managed by Puppet
+apiuser: <%= $apiuser %>
+apipass: <%= $apipass %>
+apihost: <%= $apihost %>
+apiport: <%= $apiport %>

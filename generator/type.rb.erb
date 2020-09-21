@@ -5,13 +5,9 @@
 require 'puppet/resource_api'
 
 Puppet::ResourceApi.register_type(
-  name: '<%= @name %>',
+  name: '<%= typemap['name'] %>',
   docs: <<-EOS,
-@summary a pulp3_rpm_remote type
-@example
-pulp3_rpm_remote { 'centos-8-appstream':
-  ensure => 'present',
-}
+@summary <%= typemap['description'] %>
 
 This type provides Puppet with the capabilities to manage a pulp <%= @name %>
 EOS
@@ -22,8 +18,19 @@ EOS
       desc:    'Whether this resource should be present or absent on the target system.',
       default: 'present',
     },
-    <%- @properties.each do |property| -%>
-      <%= property %> 
+    <%- typemap['attributes'].each do |attribute| -%>
+    <%= attribute['name'] -%>: {
+      type: '<%= attribute['type'] %>',
+      <%- if attribute['description'] -%>
+      description: '<%= attribute['description'] %>',
+      <%- end -%>
+      <%- if attribute['default'] -%>
+      default: '<%= attribute['default'] %>',
+      <%- end -%>
+      <%- if attribute['behavior'] -%>
+      behavior: '<%= attribute['behavior'] %>',
+      <%- end -%>
+    },
     <%- end -%>
     pulp_href: {
       type:       'String',

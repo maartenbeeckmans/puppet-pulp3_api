@@ -1,0 +1,15 @@
+---
+# Config used by generator
+resources:
+  - schema: rpm.RpmDistribution
+    name: test_pulp_rpm_distribution
+    endpoint: /pulp/api/v3/distributions/rpm/rpm/
+  - schema: rpm.RpmPublication
+    name: test_pulp_rpm_publication
+    endpoint: /pulp/api/v3/publications/rpm/rpm/
+  - schema: rpm.RpmRemote 
+    name: test_pulp_rpm_remote
+    endpoint: /pulp/api/v3/remotes/rpm/rpm/
+  - schema: rpm.RpmRepository
+    name: test_pulp_rpm_repository
+    endpoint: /pulp/api/v3/repositories/rpm/rpm/
