@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 require 'puppet/resource_api/simple_provider'
-
 require 'rubygems'
 require 'rest-client'
 require 'json'
+require 'uri'
 
 # Implementation for the pulp3_rpm_remote type using the Resource API.
 class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::SimpleProvider
@@ -13,7 +13,6 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     @apipass = 'adminpassword'
     @apihost = 'pulp.xxs.vagrant'
     @apiport = '24817'
-    @uri = "http://#{@apiuser}:#{@apipass}@#{@apihost}:#{@apiport}"
     @endpoint = '/pulp/api/v3/remotes/rpm/rpm/'
     @property_hash = []
   end
@@ -31,15 +30,6 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     @property_hash
   end
 
-  def build_hash(object)
-    hash = {}
-    hash[:ensure] = 'present'
-    hash[:name] = object['name']
-    hash[:url] = object['url']
-    hash[:pulp_href] = object['pulp_href']
-    hash
-  end
-
   def create(context, name, should)
     context.debug("Creating '#{name}' with #{should.inspect}")
     data = { 'name'      => should[:name],
@@ -47,12 +37,10 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     }
     begin
       context.debug("The uri is #{@uri}#{@endpoint}")
-      response = RestClient.post "#{@uri}#{@endpoint}",
-        data.to_json,
-        { content_type: :json, accept: :json }
-      context.debug("The REST API Post response is #{JSON.parse(response)}")
+      response = request(@endpoint, Net::HTTP::Post, data)
+      context.debug("The REST API Post response is #{response}")
     rescue StandardError => e
-      context.err("The response to the request was '#{JSON.parse(response)}'")
+      context.err("The response to the request was '#{response}'")
       context.err("Creating remote '#{name}' failed with: #{e}")
     end
   end
@@ -63,10 +51,7 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     data = { 'name' => should[:name],
              'url'  => should[:url], }
     begin
-      res = RestClient.put "#{@uri}#{pulp_href}",
-        data.to_json,
-        { content_type: :json, accept: :json }
-      response = JSON.parse(res)
+      response = request(pulp_href, Net::HTTP::Put, data)
       context.debug("Object #{name} motified with following task: #{response}")
     rescue StandardError => e
       context.err("Updating remote '#{name}' failed with: #{e}")
@@ -77,20 +62,45 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     context.debug("Deleting '#{name}'")
     pulp_href = get_pulp_href(name, context)
     begin
-      res = RestClient.delete "#{@uri}#{pulp_href}",
-        { content_type: :json, accept: :json }
-      response = JSON.parse(res)
+      response = request(pulp_href, Net::HTTP::Delete)
       context.debug("Object deleted with following task: #{response}")
     rescue StandardError => e
       context.err("Deleting remote '#{name}' failed with: #{e}")
     end
   end
 
+  # Data parser methods
+  def build_hash(object)
+    hash = {}
+    hash[:ensure] = 'present'
+    hash[:name] = object['name']
+    hash[:url] = object['url']
+    hash[:pulp_href] = object['pulp_href']
+    hash
+  end
+
+  # Helper methods
+  def request(endpoint, method=Net::HTTP::Get, data=nil)
+    uri = URI("http://#{@apihost}:#{@apiport}#{endpoint}")
+    request = method.new(uri, 'Content-Type' => 'application/json')
+    request.basic_auth @apiuser, @apipass
+    request.body = JSON.generate(data) if data
+    unless @connection
+      @connection = Net::HTTP::new(uri.host, uri.port)
+      @connection.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
+    response = @connection.request(request)
+    if response.body == "null"
+      res = nil
+    else
+      res = JSON.parse(response.body)
+    end
+    res
+  end
+
   def get_pulp_objects(context)
     begin
-      res = RestClient.get "#{@uri}#{@endpoint}",
-        { content_type: :json, accept: :json }
-      response = JSON.parse(res)
+      response = request(@endpoint)
       context.debug("Number of objects found: '#{response['count']}'")
       context.debug("Found objects: '#{JSON.pretty_generate(response['results'])}'")
       return [] if response['count'] == '0'
