@@ -49,62 +49,72 @@ class Endpoint
     Config.resourcemap['resources'].each do |resource|
       puts '----------------------------------------'.blue
       puts "Generating resource #{resource['name']}".blue
-      _gentype(resource['name'], resource['schema'], api_config_hash)
-      _genprovider(resource['name'], resource['schema'], resource['endpoint'], api_config_hash)
+      config_hash = _create_config_hash(resource, api_config_hash)
+      _print_hash(config_hash)
+      _gentype(config_hash)
+      _genprovider(config_hash)
       puts '----------------------------------------'.blue
     end
   end
 
-  def _gentype(typename, schema, api_config_hash)
-    puts "Generating type ../lib/puppet/type/#{typename}.rb".green
-    typemap = Hash.new
-    typemap['name'] = typename
-    typemap['description'] = api_config_hash['components']['schemas'][schema]['description']
+  def _create_config_hash(resource, api_config_hash)
+    config_hash = Hash.new
+    config_hash['name'] = resource['name']
+    config_hash['providername'] = resource['name']
+      .split(/ |\_|\-/).map(&:capitalize).join("")
+    config_hash['endpoint'] = resource['endpoint']
+    config_hash['description'] = "Resource for creating #{resource['name']}"
     attributearray = Array.new
-    api_config_hash['components']['schemas'][schema]['properties'].each do |attribute|
+    api_config_hash['definitions'][resource['schema']]['properties'].each do |attribute|
       attributemap = Hash.new
       attributemap['name'] = attribute[0]
-      if not attribute[1]['allOf'].nil?
-        enum_link = attribute[1]['allOf'][0]['$ref'].split('/')[-1]
-        enum_types = api_config_hash['components']['schemas'][enum_link]['enum']
-        attributemap['type'] = "Enum#{enum_types}"
+      if not attribute[1]['enum'].nil?
+        attributemap['type'] = "Enum#{attribute[1]['enum'].uniq}"
+        attributemap['default'] = attribute[1]['enum'][-1]
       else
-        if not attribute[1]['nullable'].nil?
+        if not attribute[1]['x-nullable'].nil?
           attributemap['type'] = "Optional[#{Config.typemap[attribute[1]['type']]}]"
         else
           attributemap['type'] = Config.typemap[attribute[1]['type']]
         end
+        if attribute[1]['type'] == 'boolean'
+          attributemap['default'] = false
+        end
       end
       if not attribute[1]['description'].nil?
         attributemap['description'] = attribute[1]['description'].gsub("'", '"')
+      else
+        attributemap['description'] = attribute[1]['title'].gsub("'", '"')
       end
       if not attribute[1]['default'].nil?
         attributemap['default'] = attribute[1]['default']
       end
-      if attributemap['name'] == 'name'
+      if not attribute[1]['minimum'].nil?
+        attributemap['default'] = attribute[1]['minimum']
+      end
+      if attribute[1]['name'] == config_hash['namevar']
         attributemap['behaviour'] = ':namevar'
+      end
+      if not attribute[1]['readOnly'].nil?
+        attributemap['behaviour'] = ':readonly'
       end
       attributearray << attributemap
     end
-    typemap['attributes'] = attributearray
-    File.open("../lib/puppet/type/#{typename}.rb", 'w') do |f|
+    config_hash['attributes'] = attributearray
+    config_hash
+  end
+
+  def _gentype(config_hash)
+    puts "Generating type ../lib/puppet/type/#{config_hash['name']}.rb".green
+    File.open("../lib/puppet/type/#{config_hash['name']}.rb", 'w') do |f|
       f.write Config.typetemplate.result(binding)
     end
   end
 
-  def _genprovider(providername, schema, endpoint, api_config_hash)
-    puts "Generating provider ../lib/puppet/provider/#{providername}/#{providername}.rb".green
-    providermap = Hash.new
-    providermap['name'] = providername
-      .split(/ |\_|\-/).map(&:capitalize).join("")
-    providermap['endpoint'] = endpoint
-    attributearray = Array.new
-    api_config_hash['components']['schemas'][schema]['properties'].each do |attribute|
-      attributearray << attribute[0]
-    end
-    providermap['attributes'] = attributearray
-    FileUtils.mkdir_p "../lib/puppet/provider/#{providername}"
-    File.open("../lib/puppet/provider/#{providername}/#{providername}.rb", 'w') do |f|
+  def _genprovider(config_hash)
+    puts "Generating provider ../lib/puppet/provider/#{config_hash['providername']}/#{config_hash['providername']}.rb".green
+    FileUtils.mkdir_p "../lib/puppet/provider/#{config_hash['providername']}"
+    File.open("../lib/puppet/provider/#{config_hash['providername']}/#{config_hash['providername']}.rb", 'w') do |f|
       f.write Config.providertemplate.result(binding)
     end
   end

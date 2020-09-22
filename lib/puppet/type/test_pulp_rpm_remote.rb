@@ -7,7 +7,7 @@ require 'puppet/resource_api'
 Puppet::ResourceApi.register_type(
   name: 'test_pulp_rpm_remote',
   docs: <<-EOS,
-@summary A Serializer for RpmRemote.
+@summary Resource for creating test_pulp_rpm_remote
 
 This type provides Puppet with the capabilities to manage a pulp 
 EOS
@@ -17,6 +17,14 @@ EOS
       type:    'Enum[present, absent]',
       desc:    'Whether this resource should be present or absent on the target system.',
       default: 'present',
+    },
+    pulp_href: {
+      type: 'String',
+      desc: 'Pulp href',
+    },
+    pulp_created: {
+      type: 'String',
+      desc: 'Timestamp of creation.',
     },
     name: {
       type: 'String',
@@ -28,11 +36,11 @@ EOS
     },
     ca_cert: {
       type: 'Optional[String]',
-      desc: 'A PEM encoded CA certificate used to validate the server certificate presented by the remote server.',
+      desc: 'A string containing the PEM encoded CA certificate used to validate the server certificate presented by the remote server. All new line characters must be escaped.',
     },
     client_cert: {
       type: 'Optional[String]',
-      desc: 'A PEM encoded client certificate used for authentication.',
+      desc: 'A string containing the PEM encoded client certificate used for authentication. All new line characters must be escaped.',
     },
     client_key: {
       type: 'Optional[String]',
@@ -41,6 +49,7 @@ EOS
     tls_validation: {
       type: 'Boolean',
       desc: 'If True, TLS peer validation must be performed.',
+      default: false,
     },
     proxy_url: {
       type: 'Optional[String]',
@@ -54,23 +63,23 @@ EOS
       type: 'Optional[String]',
       desc: 'The password to be used for authentication when syncing.',
     },
+    pulp_last_updated: {
+      type: 'String',
+      desc: 'Timestamp of the most recent update of the remote.',
+    },
     download_concurrency: {
       type: 'Integer',
       desc: 'Total number of simultaneous connections.',
+      default: 1,
     },
     policy: {
       type: 'Enum["immediate", "on_demand", "streamed"]',
       desc: 'The policy to use when downloading content. The possible values include: "immediate", "on_demand", and "streamed". "immediate" is the default.',
-      default: 'immediate',
+      default: immediate,
     },
     sles_auth_token: {
       type: 'Optional[String]',
       desc: 'Authentication token for SLES repositories.',
-    },
-    pulp_href: {
-      type:       'String',
-      desc:       'The Pulp href',
-      behaviour:  :read_only,
     },
   },
 )

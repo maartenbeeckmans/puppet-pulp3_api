@@ -4,12 +4,16 @@ resources:
   - schema: rpm.RpmDistribution
     name: test_pulp_rpm_distribution
     endpoint: /pulp/api/v3/distributions/rpm/rpm/
+    namevar: base_path
   - schema: rpm.RpmPublication
     name: test_pulp_rpm_publication
     endpoint: /pulp/api/v3/publications/rpm/rpm/
+    namevar: repository_version
   - schema: rpm.RpmRemote 
     name: test_pulp_rpm_remote
     endpoint: /pulp/api/v3/remotes/rpm/rpm/
+    namevar: name
   - schema: rpm.RpmRepository
     name: test_pulp_rpm_repository
     endpoint: /pulp/api/v3/repositories/rpm/rpm/
+    namevar: name

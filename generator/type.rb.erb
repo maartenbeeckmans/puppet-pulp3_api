@@ -5,9 +5,9 @@
 require 'puppet/resource_api'
 
 Puppet::ResourceApi.register_type(
-  name: '<%= typemap['name'] %>',
+  name: '<%= config_hash['name'] %>',
   docs: <<-EOS,
-@summary <%= typemap['description'] %>
+@summary <%= config_hash['description'] %>
 
 This type provides Puppet with the capabilities to manage a pulp <%= @name %>
 EOS
@@ -18,24 +18,21 @@ EOS
       desc:    'Whether this resource should be present or absent on the target system.',
       default: 'present',
     },
-    <%- typemap['attributes'].each do |attribute| -%>
+    <%- config_hash['attributes'].each do |attribute| -%>
     <%= attribute['name'] -%>: {
       type: '<%= attribute['type'] %>',
-      <%- if attribute['description'] -%>
       desc: '<%= attribute['description'] %>',
-      <%- end -%>
-      <%- if attribute['default'] -%>
+      <%- if not attribute['default'].nil? -%>
+        <%- if attribute['type'] == 'String' or attribute['type'] == 'Optional[String]' -%>
       default: '<%= attribute['default'] %>',
+        <%- else -%>
+      default: <%= attribute['default'] %>,
+        <%- end -%>
       <%- end -%>
       <%- if attribute['behavior'] -%>
-      behaviour: <%= attribute['behaviour'] %>',
+      behaviour: <%= attribute['behaviour'] %>,
       <%- end -%>
     },
     <%- end -%>
-    pulp_href: {
-      type:       'String',
-      desc:       'The Pulp href',
-      behaviour:  :read_only,
-    },
   },
 )
