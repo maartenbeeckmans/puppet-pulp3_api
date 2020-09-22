@@ -20,20 +20,19 @@ EOS
     },
     base_path: {
       type: 'String',
-      description: 'The base (relative) path component of the published url. Avoid paths that                     overlap with other distribution base paths (e.g. "foo" and "foo/bar")',
+      desc: 'The base (relative) path component of the published url. Avoid paths that                     overlap with other distribution base paths (e.g. "foo" and "foo/bar")',
     },
     content_guard: {
       type: 'Optional[String]',
-      description: 'An optional content-guard.',
+      desc: 'An optional content-guard.',
     },
     name: {
       type: 'String',
-      description: 'A unique name. Ex, `rawhide` and `stable`.',
-      behavior: ':namevar',
+      desc: 'A unique name. Ex, `rawhide` and `stable`.',
     },
     publication: {
       type: 'Optional[String]',
-      description: 'Publication to be served',
+      desc: 'Publication to be served',
     },
     pulp_href: {
       type:       'String',

@@ -20,23 +20,22 @@ EOS
     },
     name: {
       type: 'String',
-      description: 'A unique name for this repository.',
-      behavior: ':namevar',
+      desc: 'A unique name for this repository.',
     },
     description: {
       type: 'Optional[String]',
-      description: 'An optional description.',
+      desc: 'An optional description.',
     },
     remote: {
       type: 'Optional[String]',
     },
     metadata_signing_service: {
       type: 'Optional[String]',
-      description: 'A reference to an associated signing service.',
+      desc: 'A reference to an associated signing service.',
     },
     retain_package_versions: {
       type: 'Integer',
-      description: 'The number of versions of each package to keep in the repository; older versions will be purged. The default is "0", which will disable this feature and keep all versions of each package.',
+      desc: 'The number of versions of each package to keep in the repository; older versions will be purged. The default is "0", which will disable this feature and keep all versions of each package.',
     },
     pulp_href: {
       type:       'String',

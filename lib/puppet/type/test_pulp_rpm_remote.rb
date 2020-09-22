@@ -20,53 +20,52 @@ EOS
     },
     name: {
       type: 'String',
-      description: 'A unique name for this remote.',
-      behavior: ':namevar',
+      desc: 'A unique name for this remote.',
     },
     url: {
       type: 'String',
-      description: 'The URL of an external content source.',
+      desc: 'The URL of an external content source.',
     },
     ca_cert: {
       type: 'Optional[String]',
-      description: 'A PEM encoded CA certificate used to validate the server certificate presented by the remote server.',
+      desc: 'A PEM encoded CA certificate used to validate the server certificate presented by the remote server.',
     },
     client_cert: {
       type: 'Optional[String]',
-      description: 'A PEM encoded client certificate used for authentication.',
+      desc: 'A PEM encoded client certificate used for authentication.',
     },
     client_key: {
       type: 'Optional[String]',
-      description: 'A PEM encoded private key used for authentication.',
+      desc: 'A PEM encoded private key used for authentication.',
     },
     tls_validation: {
       type: 'Boolean',
-      description: 'If True, TLS peer validation must be performed.',
+      desc: 'If True, TLS peer validation must be performed.',
     },
     proxy_url: {
       type: 'Optional[String]',
-      description: 'The proxy URL. Format: scheme://user:password@host:port',
+      desc: 'The proxy URL. Format: scheme://user:password@host:port',
     },
     username: {
       type: 'Optional[String]',
-      description: 'The username to be used for authentication when syncing.',
+      desc: 'The username to be used for authentication when syncing.',
     },
     password: {
       type: 'Optional[String]',
-      description: 'The password to be used for authentication when syncing.',
+      desc: 'The password to be used for authentication when syncing.',
     },
     download_concurrency: {
       type: 'Integer',
-      description: 'Total number of simultaneous connections.',
+      desc: 'Total number of simultaneous connections.',
     },
     policy: {
       type: 'Enum["immediate", "on_demand", "streamed"]',
-      description: 'The policy to use when downloading content. The possible values include: "immediate", "on_demand", and "streamed". "immediate" is the default.',
+      desc: 'The policy to use when downloading content. The possible values include: "immediate", "on_demand", and "streamed". "immediate" is the default.',
       default: 'immediate',
     },
     sles_auth_token: {
       type: 'Optional[String]',
-      description: 'Authentication token for SLES repositories.',
+      desc: 'Authentication token for SLES repositories.',
     },
     pulp_href: {
       type:       'String',

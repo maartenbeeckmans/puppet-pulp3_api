@@ -22,13 +22,13 @@ EOS
     <%= attribute['name'] -%>: {
       type: '<%= attribute['type'] %>',
       <%- if attribute['description'] -%>
-      description: '<%= attribute['description'] %>',
+      desc: '<%= attribute['description'] %>',
       <%- end -%>
       <%- if attribute['default'] -%>
       default: '<%= attribute['default'] %>',
       <%- end -%>
       <%- if attribute['behavior'] -%>
-      behavior: '<%= attribute['behavior'] %>',
+      behaviour: <%= attribute['behaviour'] %>',
       <%- end -%>
     },
     <%- end -%>

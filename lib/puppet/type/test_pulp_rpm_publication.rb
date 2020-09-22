@@ -23,16 +23,16 @@ EOS
     },
     repository: {
       type: 'String',
-      description: 'A URI of the repository to be published.',
+      desc: 'A URI of the repository to be published.',
     },
     metadata_checksum_type: {
       type: 'Enum["unknown", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]',
-      description: 'The checksum type for metadata.',
+      desc: 'The checksum type for metadata.',
       default: 'sha256',
     },
     package_checksum_type: {
       type: 'Enum["unknown", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]',
-      description: 'The checksum type for packages.',
+      desc: 'The checksum type for packages.',
       default: 'sha256',
     },
     pulp_href: {

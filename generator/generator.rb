@@ -82,7 +82,7 @@ class Endpoint
         attributemap['default'] = attribute[1]['default']
       end
       if attributemap['name'] == 'name'
-        attributemap['behavior'] = ':namevar'
+        attributemap['behaviour'] = ':namevar'
       end
       attributearray << attributemap
     end
@@ -96,6 +96,7 @@ class Endpoint
     puts "Generating provider ../lib/puppet/provider/#{providername}/#{providername}.rb".green
     providermap = Hash.new
     providermap['name'] = providername
+      .split(/ |\_|\-/).map(&:capitalize).join("")
     providermap['endpoint'] = endpoint
     attributearray = Array.new
     api_config_hash['components']['schemas'][schema]['properties'].each do |attribute|

@@ -6,15 +6,19 @@ require 'puppet/resource_api/simple_provider'
 require 'rubygems'
 require 'rest-client'
 require 'json'
-require 'yaml'
+#require 'yaml'
 
-class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::SimpleProvider
+class Puppet::Provider::TestPulpRpmRepository::TestPulpRpmRepository < Puppet::ResourceApi::SimpleProvider
   def initialize
-    settings = YAML.load_file('/etc/pulpapi.yaml')
-    @apiuser = settings['apiuser']
-    @apipass = settings['apipass']
-    @apihost = settings['apihost']
-    @apiport = settings['apiport']
+    #settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
+    #@apiuser = settings['apiuser']
+    #@apipass = settings['apipass']
+    #@apihost = settings['apihost']
+    #@apiport = settings['apiport']
+    @apiuser = 'admin'
+    @apipass = 'adminpassword'
+    @apihost = 'pulp.xxs.vagrant'
+    @apiport = '24817'
     @uri = "http://#{@apiuser}:#{@apipass}@#{@apihost}:#{@apiport}"
     @endpoint = '/pulp/api/v3/repositories/rpm/rpm/'
     @property_hash = []
