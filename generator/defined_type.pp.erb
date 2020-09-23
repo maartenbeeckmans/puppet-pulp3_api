@@ -1,0 +1,29 @@
+#
+# Defined type automatically generated
+#
+<%# Getting the namevar attribute -%>
+<%- namevar = nil -%>
+<%- config_hash['attributes'].each do |attribute| -%>
+  <%- if attribute['behaviour'] == ':namevar' -%>
+    <%- namevar = attribute['name'] -%>
+  <%- end -%>
+<%- end -%>
+define pulp3_api::<%= config_hash['name'] -%> (
+  <%- config_hash['attributes'].each do |attribute| -%>
+    <%- default_value = 'undef' -%>
+    <%- if not attribute['default'].nil? -%>
+      <%- default_value = attribute['default'] -%>
+    <%- end -%>
+    <%- if attribute['name'] != namevar and attribute['behaviour'] != ':read_only' -%>
+    <%= attribute['type'] -%> $<%= attribute['name'] %> = <%= default_value -%>,
+    <%- end -%>
+  <%- end -%>
+) {
+  <%= config_hash['name'] -%> { $<%= namevar -%>:
+  <%- config_hash['attributes'].each do |attribute| -%>
+    <%- if attribute['name'] != namevar and attribute['behaviour'] != ':read_only' -%>
+    <%= attribute['name'] %> => $<%= attribute['name'] %>,
+    <%- end -%>
+  <%- end -%>
+  }
+}

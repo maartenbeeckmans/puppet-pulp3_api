@@ -6,7 +6,7 @@ require 'fileutils'
 
 module Config
   class << self
-    attr_reader :apidocbasepath, :typemap, :resourcemap, :typetemplate, :providertemplate
+    attr_reader :apidocbasepath, :typemap, :resourcemap, :typetemplate, :providertemplate, :definedtypetemplate
   end
   @apidocbasepath = 'api.json'
   @typemap = {
@@ -27,6 +27,7 @@ module Config
   #}
   @typetemplate = ERB.new(File.read('type.rb.erb'), nil, '-')
   @providertemplate = ERB.new(File.read('provider.rb.erb'), nil, '-')
+  @definedtypetemplate = ERB.new(File.read('defined_type.pp.erb'), nil, '-')
 end
 
 class Endpoint
@@ -53,6 +54,7 @@ class Endpoint
       _print_hash(config_hash)
       _gentype(config_hash)
       _genprovider(config_hash)
+      _gendefinedtype(config_hash)
       puts '----------------------------------------'.blue
     end
   end
@@ -72,7 +74,7 @@ class Endpoint
       attributemap = Hash.new
       attributemap['name'] = attribute[0]
       if not attribute[1]['enum'].nil?
-        attributemap['type'] = "Enum#{attribute[1]['enum'].uniq}"
+        attributemap['type'] = "Enum#{attribute[1]['enum'].uniq}".gsub('"','')
         attributemap['default'] = attribute[1]['enum'][-1]
       else
         if not attribute[1]['x-nullable'].nil?
@@ -123,6 +125,13 @@ class Endpoint
     FileUtils.mkdir_p "../lib/puppet/provider/#{config_hash['name']}"
     File.open("../lib/puppet/provider/#{config_hash['name']}/#{config_hash['name']}.rb", 'w') do |f|
       f.write Config.providertemplate.result(binding)
+    end
+  end
+
+  def _gendefinedtype(config_hash)
+    puts "Generating defined type ../manifests/#{config_hash['name']}.pp".green
+    File.open("../manifests/#{config_hash['name']}.pp", 'w') do |f|
+      f.write Config.definedtypetemplate.result(binding)
     end
   end
 end

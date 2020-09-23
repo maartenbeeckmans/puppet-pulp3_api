@@ -29,12 +29,12 @@ EOS
       desc:      'A URI of the repository to be published.',
     },
     metadata_checksum_type: {
-      type:      'Enum["unknown", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]',
+      type:      'Enum[unknown, md5, sha1, sha224, sha256, sha384, sha512]',
       desc:      'The checksum type for metadata.',
       default:   'sha256',
     },
     package_checksum_type: {
-      type:      'Enum["unknown", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]',
+      type:      'Enum[unknown, md5, sha1, sha224, sha256, sha384, sha512]',
       desc:      'The checksum type for packages.',
       default:   'sha256',
     },

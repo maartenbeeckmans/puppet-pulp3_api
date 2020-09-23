@@ -63,7 +63,7 @@ EOS
       default: 1,
     },
     policy: {
-      type:      'Enum["immediate", "on_demand", "streamed"]',
+      type:      'Enum[immediate, on_demand, streamed]',
       desc:      'The policy to use when downloading content. The possible values include: "immediate", "on_demand", and "streamed". "immediate" is the default.',
       default:   'immediate',
     },
