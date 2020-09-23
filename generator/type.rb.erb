@@ -1,6 +1,7 @@
 # 
 # This type is automatically generated
 #
+# frozen_string_literal: true
 
 require 'puppet/resource_api'
 
@@ -20,16 +21,16 @@ EOS
     },
     <%- config_hash['attributes'].each do |attribute| -%>
     <%= attribute['name'] -%>: {
-      type: '<%= attribute['type'] %>',
-      desc: '<%= attribute['description'] %>',
+      type:      '<%= attribute['type'] %>',
+      desc:      '<%= attribute['description'] %>',
       <%- if not attribute['default'].nil? -%>
-        <%- if attribute['type'] == 'String' or attribute['type'] == 'Optional[String]' -%>
-      default: '<%= attribute['default'] %>',
-        <%- else -%>
+        <%- if attribute['type'] == 'Boolean' or attribute['type'] == 'Integer' -%>
       default: <%= attribute['default'] %>,
+        <%- else -%>
+      default:   '<%= attribute['default'] %>',
         <%- end -%>
       <%- end -%>
-      <%- if attribute['behavior'] -%>
+      <%- if attribute['behaviour'] -%>
       behaviour: <%= attribute['behaviour'] %>,
       <%- end -%>
     },

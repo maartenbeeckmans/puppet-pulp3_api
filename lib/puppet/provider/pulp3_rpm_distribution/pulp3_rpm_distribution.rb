@@ -1,14 +1,14 @@
 # 
 # This provider is automatically generated
 #
+# frozen_string_literal: true
 
 require 'puppet/resource_api/simple_provider'
-require 'rubygems'
-require 'rest-client'
 require 'json'
+require 'uri'
 #require 'yaml'
 
-class Puppet::Provider::TestPulpRpmRemote::TestPulpRpmRemote < Puppet::ResourceApi::SimpleProvider
+class Puppet::Provider::Pulp3RpmDistribution::Pulp3RpmDistribution < Puppet::ResourceApi::SimpleProvider
   def initialize
     #settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
     #@apiuser = settings['apiuser']
@@ -19,8 +19,7 @@ class Puppet::Provider::TestPulpRpmRemote::TestPulpRpmRemote < Puppet::ResourceA
     @apipass = 'adminpassword'
     @apihost = 'pulp.xxs.vagrant'
     @apiport = '24817'
-    @uri = "http://#{@apiuser}:#{@apipass}@#{@apihost}:#{@apiport}"
-    @endpoint = '/pulp/api/v3/remotes/rpm/rpm/'
+    @endpoint = '/pulp/api/v3/distributions/rpm/rpm/'
     @property_hash = []
   end
 
@@ -75,43 +74,30 @@ class Puppet::Provider::TestPulpRpmRemote::TestPulpRpmRemote < Puppet::ResourceA
 
   # parser functions
   def build_hash(object)
-    hash = {}
+    hash = Hash.new
     hash[:ensure] = 'present'
+    hash[:base_path] = object['base_path']
+    hash[:content_guard] = object['content_guard']
+    hash[:name] = object['name']
+    hash[:publication] = object['publication']
     hash[:pulp_href] = object['pulp_href']
     hash[:pulp_created] = object['pulp_created']
-    hash[:name] = object['name']
-    hash[:url] = object['url']
-    hash[:ca_cert] = object['ca_cert']
-    hash[:client_cert] = object['client_cert']
-    hash[:client_key] = object['client_key']
-    hash[:tls_validation] = object['tls_validation']
-    hash[:proxy_url] = object['proxy_url']
-    hash[:username] = object['username']
-    hash[:password] = object['password']
-    hash[:pulp_last_updated] = object['pulp_last_updated']
-    hash[:download_concurrency] = object['download_concurrency']
-    hash[:policy] = object['policy']
-    hash[:sles_auth_token] = object['sles_auth_token']
+    hash[:base_url] = object['base_url']
     hash
   end
 
   def instance_to_hash(should)
-    hash = {}
-    hash[:name] = should[:name],
-    hash[:url] = should[:url],
-    hash[:ca_cert] = should[:ca_cert],
-    hash[:client_cert] = should[:client_cert],
-    hash[:client_key] = should[:client_key],
-    hash[:tls_validation] = should[:tls_validation],
-    hash[:proxy_url] = should[:proxy_url],
-    hash[:username] = should[:username],
-    hash[:password] = should[:password],
-    hash[:download_concurrency] = should[:download_concurrency],
-    hash[:policy] = should[:policy],
-    hash[:sles_auth_token] = should[:sles_auth_token],
+    hash = Hash.new
+    hash['base_path'] = should[:base_path]
+    hash['content_guard'] = should[:content_guard]
+    hash['name'] = should[:name]
+    hash['publication'] = should[:publication]
+    hash['pulp_href'] = should[:pulp_href]
+    hash['pulp_created'] = should[:pulp_created]
+    hash['base_url'] = should[:base_url]
     hash
   end
-  
+
   # helper methods
   def request(endpoint, method=Net::HTTP::Get, data=nil)
     uri = URI("http://#{@apihost}:#{@apiport}#{endpoint}")

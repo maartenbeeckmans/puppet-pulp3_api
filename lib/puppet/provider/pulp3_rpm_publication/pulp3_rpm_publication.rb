@@ -1,14 +1,14 @@
 # 
 # This provider is automatically generated
 #
+# frozen_string_literal: true
 
 require 'puppet/resource_api/simple_provider'
-require 'rubygems'
-require 'rest-client'
 require 'json'
+require 'uri'
 #require 'yaml'
 
-class Puppet::Provider::TestPulpRpmPublication::TestPulpRpmPublication < Puppet::ResourceApi::SimpleProvider
+class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::ResourceApi::SimpleProvider
   def initialize
     #settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
     #@apiuser = settings['apiuser']
@@ -19,7 +19,6 @@ class Puppet::Provider::TestPulpRpmPublication::TestPulpRpmPublication < Puppet:
     @apipass = 'adminpassword'
     @apihost = 'pulp.xxs.vagrant'
     @apiport = '24817'
-    @uri = "http://#{@apiuser}:#{@apipass}@#{@apihost}:#{@apiport}"
     @endpoint = '/pulp/api/v3/publications/rpm/rpm/'
     @property_hash = []
   end
@@ -75,26 +74,28 @@ class Puppet::Provider::TestPulpRpmPublication::TestPulpRpmPublication < Puppet:
 
   # parser functions
   def build_hash(object)
-    hash = {}
+    hash = Hash.new
     hash[:ensure] = 'present'
-    hash[:pulp_href] = object['pulp_href']
-    hash[:pulp_created] = object['pulp_created']
     hash[:repository_version] = object['repository_version']
     hash[:repository] = object['repository']
     hash[:metadata_checksum_type] = object['metadata_checksum_type']
     hash[:package_checksum_type] = object['package_checksum_type']
+    hash[:pulp_href] = object['pulp_href']
+    hash[:pulp_created] = object['pulp_created']
     hash
   end
 
   def instance_to_hash(should)
-    hash = {}
-    hash[:repository_version] = should[:repository_version],
-    hash[:repository] = should[:repository],
-    hash[:metadata_checksum_type] = should[:metadata_checksum_type],
-    hash[:package_checksum_type] = should[:package_checksum_type],
+    hash = Hash.new
+    hash['repository_version'] = should[:repository_version]
+    hash['repository'] = should[:repository]
+    hash['metadata_checksum_type'] = should[:metadata_checksum_type]
+    hash['package_checksum_type'] = should[:package_checksum_type]
+    hash['pulp_href'] = should[:pulp_href]
+    hash['pulp_created'] = should[:pulp_created]
     hash
   end
-  
+
   # helper methods
   def request(endpoint, method=Net::HTTP::Get, data=nil)
     uri = URI("http://#{@apihost}:#{@apiport}#{endpoint}")

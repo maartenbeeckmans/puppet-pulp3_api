@@ -1,14 +1,14 @@
 # 
 # This provider is automatically generated
 #
+# frozen_string_literal: true
 
 require 'puppet/resource_api/simple_provider'
-require 'rubygems'
-require 'rest-client'
 require 'json'
+require 'uri'
 #require 'yaml'
 
-class Puppet::Provider::TestPulpRpmDistribution::TestPulpRpmDistribution < Puppet::ResourceApi::SimpleProvider
+class Puppet::Provider::Pulp3RpmRepository::Pulp3RpmRepository < Puppet::ResourceApi::SimpleProvider
   def initialize
     #settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
     #@apiuser = settings['apiuser']
@@ -19,8 +19,7 @@ class Puppet::Provider::TestPulpRpmDistribution::TestPulpRpmDistribution < Puppe
     @apipass = 'adminpassword'
     @apihost = 'pulp.xxs.vagrant'
     @apiport = '24817'
-    @uri = "http://#{@apiuser}:#{@apipass}@#{@apihost}:#{@apiport}"
-    @endpoint = '/pulp/api/v3/distributions/rpm/rpm/'
+    @endpoint = '/pulp/api/v3/repositories/rpm/rpm/'
     @property_hash = []
   end
 
@@ -75,27 +74,32 @@ class Puppet::Provider::TestPulpRpmDistribution::TestPulpRpmDistribution < Puppe
 
   # parser functions
   def build_hash(object)
-    hash = {}
+    hash = Hash.new
     hash[:ensure] = 'present'
+    hash[:name] = object['name']
+    hash[:description] = object['description']
+    hash[:metadata_signing_service] = object['metadata_signing_service']
+    hash[:retain_package_versions] = object['retain_package_versions']
     hash[:pulp_href] = object['pulp_href']
     hash[:pulp_created] = object['pulp_created']
-    hash[:base_path] = object['base_path']
-    hash[:base_url] = object['base_url']
-    hash[:content_guard] = object['content_guard']
-    hash[:name] = object['name']
-    hash[:publication] = object['publication']
+    hash[:versions_href] = object['versions_href']
+    hash[:latest_version_href] = object['latest_version_href']
     hash
   end
 
   def instance_to_hash(should)
-    hash = {}
-    hash[:base_path] = should[:base_path],
-    hash[:content_guard] = should[:content_guard],
-    hash[:name] = should[:name],
-    hash[:publication] = should[:publication],
+    hash = Hash.new
+    hash['name'] = should[:name]
+    hash['description'] = should[:description]
+    hash['metadata_signing_service'] = should[:metadata_signing_service]
+    hash['retain_package_versions'] = should[:retain_package_versions]
+    hash['pulp_href'] = should[:pulp_href]
+    hash['pulp_created'] = should[:pulp_created]
+    hash['versions_href'] = should[:versions_href]
+    hash['latest_version_href'] = should[:latest_version_href]
     hash
   end
-  
+
   # helper methods
   def request(endpoint, method=Net::HTTP::Get, data=nil)
     uri = URI("http://#{@apihost}:#{@apiport}#{endpoint}")

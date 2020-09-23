@@ -1,11 +1,11 @@
 # 
 # This provider is automatically generated
 #
+# frozen_string_literal: true
 
 require 'puppet/resource_api/simple_provider'
-require 'rubygems'
-require 'rest-client'
 require 'json'
+require 'uri'
 #require 'yaml'
 
 class Puppet::Provider::<%= config_hash['providername'] -%>::<%= config_hash['providername'] -%> < Puppet::ResourceApi::SimpleProvider
@@ -19,7 +19,6 @@ class Puppet::Provider::<%= config_hash['providername'] -%>::<%= config_hash['pr
     @apipass = 'adminpassword'
     @apihost = 'pulp.xxs.vagrant'
     @apiport = '24817'
-    @uri = "http://#{@apiuser}:#{@apipass}@#{@apihost}:#{@apiport}"
     @endpoint = '<%= config_hash['endpoint'] -%>'
     @property_hash = []
   end
@@ -75,7 +74,7 @@ class Puppet::Provider::<%= config_hash['providername'] -%>::<%= config_hash['pr
 
   # parser functions
   def build_hash(object)
-    hash = {}
+    hash = Hash.new
     hash[:ensure] = 'present'
     <%- config_hash['attributes'].each do |attribute| -%>
     hash[:<%= attribute['name'] %>] = object['<%= attribute['name'] %>']
@@ -84,15 +83,15 @@ class Puppet::Provider::<%= config_hash['providername'] -%>::<%= config_hash['pr
   end
 
   def instance_to_hash(should)
-    hash = {}
+    hash = Hash.new
     <%- config_hash['attributes'].each do |attribute| -%>
       <%- if not attribute['behaviour'] == ':readonly' -%>
-    hash[:<%= attribute['name'] -%>] = should[:<%= attribute['name'] -%>],
+    hash['<%= attribute['name'] -%>'] = should[:<%= attribute['name'] -%>]
       <%- end -%>
     <%- end -%>
     hash
   end
-  
+
   # helper methods
   def request(endpoint, method=Net::HTTP::Get, data=nil)
     uri = URI("http://#{@apihost}:#{@apiport}#{endpoint}")

@@ -1,14 +1,20 @@
+# 
+# This provider is automatically generated
+#
 # frozen_string_literal: true
 
 require 'puppet/resource_api/simple_provider'
-require 'rubygems'
-require 'rest-client'
 require 'json'
 require 'uri'
+#require 'yaml'
 
-# Implementation for the pulp3_rpm_remote type using the Resource API.
 class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::SimpleProvider
   def initialize
+    #settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
+    #@apiuser = settings['apiuser']
+    #@apipass = settings['apipass']
+    #@apihost = settings['apihost']
+    #@apiport = settings['apiport']
     @apiuser = 'admin'
     @apipass = 'adminpassword'
     @apihost = 'pulp.xxs.vagrant'
@@ -32,9 +38,7 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
 
   def create(context, name, should)
     context.debug("Creating '#{name}' with #{should.inspect}")
-    data = { 'name'      => should[:name],
-             'url'       => should[:url], 
-    }
+    data = instance_to_hash(should)
     begin
       context.debug("The uri is #{@uri}#{@endpoint}")
       response = request(@endpoint, Net::HTTP::Post, data)
@@ -48,8 +52,7 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
   def update(context, name, should)
     context.debug("Updating '#{name}' with #{should.inspect}")
     pulp_href = get_pulp_href(name, context)
-    data = { 'name' => should[:name],
-             'url'  => should[:url], }
+    data = instance_to_hash(should)
     begin
       response = request(pulp_href, Net::HTTP::Put, data)
       context.debug("Object #{name} motified with following task: #{response}")
@@ -69,17 +72,49 @@ class Puppet::Provider::Pulp3RpmRemote::Pulp3RpmRemote < Puppet::ResourceApi::Si
     end
   end
 
-  # Data parser methods
+  # parser functions
   def build_hash(object)
-    hash = {}
+    hash = Hash.new
     hash[:ensure] = 'present'
     hash[:name] = object['name']
     hash[:url] = object['url']
+    hash[:ca_cert] = object['ca_cert']
+    hash[:client_cert] = object['client_cert']
+    hash[:client_key] = object['client_key']
+    hash[:tls_validation] = object['tls_validation']
+    hash[:proxy_url] = object['proxy_url']
+    hash[:username] = object['username']
+    hash[:password] = object['password']
+    hash[:download_concurrency] = object['download_concurrency']
+    hash[:policy] = object['policy']
+    hash[:sles_auth_token] = object['sles_auth_token']
     hash[:pulp_href] = object['pulp_href']
+    hash[:pulp_created] = object['pulp_created']
+    hash[:pulp_last_updated] = object['pulp_last_updated']
     hash
   end
 
-  # Helper methods
+  def instance_to_hash(should)
+    hash = Hash.new
+    hash['name'] = should[:name]
+    hash['url'] = should[:url]
+    hash['ca_cert'] = should[:ca_cert]
+    hash['client_cert'] = should[:client_cert]
+    hash['client_key'] = should[:client_key]
+    hash['tls_validation'] = should[:tls_validation]
+    hash['proxy_url'] = should[:proxy_url]
+    hash['username'] = should[:username]
+    hash['password'] = should[:password]
+    hash['download_concurrency'] = should[:download_concurrency]
+    hash['policy'] = should[:policy]
+    hash['sles_auth_token'] = should[:sles_auth_token]
+    hash['pulp_href'] = should[:pulp_href]
+    hash['pulp_created'] = should[:pulp_created]
+    hash['pulp_last_updated'] = should[:pulp_last_updated]
+    hash
+  end
+
+  # helper methods
   def request(endpoint, method=Net::HTTP::Get, data=nil)
     uri = URI("http://#{@apihost}:#{@apiport}#{endpoint}")
     request = method.new(uri, 'Content-Type' => 'application/json')

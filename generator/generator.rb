@@ -65,6 +65,9 @@ class Endpoint
     config_hash['endpoint'] = resource['endpoint']
     config_hash['description'] = "Resource for creating #{resource['name']}"
     attributearray = Array.new
+    attributearray_namevar = Array.new
+    attributearray_normal = Array.new
+    attributearray_read_only = Array.new
     api_config_hash['definitions'][resource['schema']]['properties'].each do |attribute|
       attributemap = Hash.new
       attributemap['name'] = attribute[0]
@@ -92,14 +95,18 @@ class Endpoint
       if not attribute[1]['minimum'].nil?
         attributemap['default'] = attribute[1]['minimum']
       end
-      if attribute[1]['name'] == config_hash['namevar']
+      if attribute[0] == resource['namevar']
         attributemap['behaviour'] = ':namevar'
+        attributearray_namevar << attributemap 
+      elsif not attribute[1]['readOnly'].nil?
+        attributemap['behaviour'] = ':read_only'
+        attributearray_read_only << attributemap
+      else
+        attributearray_normal << attributemap
       end
-      if not attribute[1]['readOnly'].nil?
-        attributemap['behaviour'] = ':readonly'
-      end
-      attributearray << attributemap
     end
+    # Ordering is important for type
+    attributearray = attributearray_namevar + attributearray_normal + attributearray_read_only
     config_hash['attributes'] = attributearray
     config_hash
   end
@@ -112,9 +119,9 @@ class Endpoint
   end
 
   def _genprovider(config_hash)
-    puts "Generating provider ../lib/puppet/provider/#{config_hash['providername']}/#{config_hash['providername']}.rb".green
-    FileUtils.mkdir_p "../lib/puppet/provider/#{config_hash['providername']}"
-    File.open("../lib/puppet/provider/#{config_hash['providername']}/#{config_hash['providername']}.rb", 'w') do |f|
+    puts "Generating provider ../lib/puppet/provider/#{config_hash['name']}/#{config_hash['name']}.rb".green
+    FileUtils.mkdir_p "../lib/puppet/provider/#{config_hash['name']}"
+    File.open("../lib/puppet/provider/#{config_hash['name']}/#{config_hash['name']}.rb", 'w') do |f|
       f.write Config.providertemplate.result(binding)
     end
   end
