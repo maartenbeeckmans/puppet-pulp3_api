@@ -19,18 +19,18 @@ EOS
       desc:    'Whether this resource should be present or absent on the target system.',
       default: 'present',
     },
+    name: {
+      type:      'String',
+      desc:      'A unique name. Ex, `rawhide` and `stable`.',
+      behaviour: :namevar,
+    },
     base_path: {
       type:      'String',
       desc:      'The base (relative) path component of the published url. Avoid paths that                     overlap with other distribution base paths (e.g. "foo" and "foo/bar")',
-      behaviour: :namevar,
     },
     content_guard: {
       type:      'Optional[String]',
       desc:      'An optional content-guard.',
-    },
-    name: {
-      type:      'String',
-      desc:      'A unique name. Ex, `rawhide` and `stable`.',
     },
     publication: {
       type:      'Optional[String]',

@@ -25,7 +25,7 @@ EOS
       behaviour: :namevar,
     },
     repository: {
-      type:      'String',
+      type:      'Optional[String]',
       desc:      'A URI of the repository to be published.',
     },
     metadata_checksum_type: {

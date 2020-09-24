@@ -76,9 +76,9 @@ class Puppet::Provider::Pulp3RpmDistribution::Pulp3RpmDistribution < Puppet::Res
   def build_hash(object)
     hash = Hash.new
     hash[:ensure] = 'present'
+    hash[:name] = object['name']
     hash[:base_path] = object['base_path']
     hash[:content_guard] = object['content_guard']
-    hash[:name] = object['name']
     hash[:publication] = object['publication']
     hash[:pulp_href] = object['pulp_href']
     hash[:pulp_created] = object['pulp_created']
@@ -88,9 +88,9 @@ class Puppet::Provider::Pulp3RpmDistribution::Pulp3RpmDistribution < Puppet::Res
 
   def instance_to_hash(should)
     hash = Hash.new
+    hash['name'] = should[:name]
     hash['base_path'] = should[:base_path]
     hash['content_guard'] = should[:content_guard]
-    hash['name'] = should[:name]
     hash['publication'] = should[:publication]
     hash['pulp_href'] = should[:pulp_href]
     hash['pulp_created'] = should[:pulp_created]

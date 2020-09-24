@@ -11,6 +11,7 @@ class pulp3_api (
   Hash         $repositories  = {},
   Hash         $publications  = {},
   Hash         $distributions = {},
+  Hash         $mirrors       = {},
 )
 {
   $_settings_hash = {
@@ -26,8 +27,9 @@ class pulp3_api (
   }
 
   # Creating resources
-  create_resources(pulp3_api::pulp3_rpm_remote, $remotes)
-  create_resources(pulp3_api::pulp3_rpm_repository, $remotes)
-  create_resources(pulp3_api::pulp3_rpm_publication, $remotes)
-  create_resources(pulp3_api::pulp3_rpm_distribution, $remotes)
+  create_resources(pulp3_rpm_remote, $remotes)
+  create_resources(pulp3_rpm_repository, $repositories)
+  create_resources(pulp3_rpm_publication, $publications)
+  create_resources(pulp3_rpm_distribution, $distributions)
+  create_resources(pulp3_api::mirror, $mirrors)
 }

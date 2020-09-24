@@ -38,11 +38,14 @@ class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::Resou
 
   def create(context, name, should)
     context.debug("Creating '#{name}' with #{should.inspect}")
+    context.notice("Should: '#{should}'")
+    context.notice("Should[:repository]: '#{should[:repository]}'")
     data = instance_to_hash(should)
+    context.notice("Data request: '#{data}'")
     begin
-      context.debug("The uri is #{@uri}#{@endpoint}")
+      context.notice("The uri is #{@uri}#{@endpoint}")
       response = request(@endpoint, Net::HTTP::Post, data)
-      context.debug("The REST API Post response is #{response}")
+      context.notice("The REST API Post response is #{response}")
     rescue StandardError => e
       context.err("The response to the request was '#{response}'")
       context.err("Creating remote '#{name}' failed with: #{e}")
@@ -87,8 +90,7 @@ class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::Resou
 
   def instance_to_hash(should)
     hash = Hash.new
-    hash['repository_version'] = should[:repository_version]
-    hash['repository'] = should[:repository]
+    hash['repository_version'] = should[:repository_version] unless should[:repository_version] == ''
     hash['metadata_checksum_type'] = should[:metadata_checksum_type]
     hash['package_checksum_type'] = should[:package_checksum_type]
     hash['pulp_href'] = should[:pulp_href]
