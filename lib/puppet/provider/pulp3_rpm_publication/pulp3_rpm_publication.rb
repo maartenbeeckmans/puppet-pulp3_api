@@ -38,14 +38,11 @@ class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::Resou
 
   def create(context, name, should)
     context.debug("Creating '#{name}' with #{should.inspect}")
-    context.notice("Should: '#{should}'")
-    context.notice("Should[:repository]: '#{should[:repository]}'")
     data = instance_to_hash(should)
-    context.notice("Data request: '#{data}'")
     begin
-      context.notice("The uri is #{@uri}#{@endpoint}")
+      context.debug("The uri is #{@uri}#{@endpoint}")
       response = request(@endpoint, Net::HTTP::Post, data)
-      context.notice("The REST API Post response is #{response}")
+      context.debug("The REST API Post response is #{response}")
     rescue StandardError => e
       context.err("The response to the request was '#{response}'")
       context.err("Creating remote '#{name}' failed with: #{e}")
