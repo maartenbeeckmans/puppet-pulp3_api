@@ -1,0 +1,36 @@
+<%- | String  $api_host,
+      Integer $api_port,
+      String  $remote_name,
+      String  $repository_name,
+| -%>
+#!/bin/bash
+#
+# This file is managed by Puppet, do not edit manually!
+#
+
+# Get pulp href for remote and repository
+remote_href=$(curl --netrc -s "http://<%= $api_host -%>:<%= $api_port -%>/pulp/api/v3/remotes/rpm/rpm/" | jq -r ".results[] | select(.name == \"<%= $remote_name -%>\") | .pulp_href")
+repository_href=$(curl --netrc -s "http://<%= $api_host -%>:<%= $api_port -%>/pulp/api/v3/repositories/rpm/rpm/" | jq -r ".results[] | select(.name == \"<%= $repository_name -%>\") | .pulp_href")
+
+# Sync repository with remote
+task_href=$(curl --netrc -s -L -X POST -H "Content-Type: application/json" "http://<%= $api_host -%>:<%= $api_port -%>${repository_href}sync/" -d "{\"remote\": \"${remote_href}\"}" | jq -r '.task')
+
+# Wait until task is finished
+while true
+do
+  state=$(curl --netrc -s "http://<%= $api_host -%>:<%= $api_port -%>${task_href}" | jq -r '.state')
+  case ${state} in
+    failed|canceled)
+      echo -e "\033[0;31mFailed: Task in state ${state}.\033[0m"
+      exit 1
+      ;;
+    completed)
+      echo "Task ${task_href} completed successfully"
+      break
+      ;;
+    *)
+      echo "Task not finished, sleeping for 1 second"
+      sleep 1
+      ;;
+  esac
+done
