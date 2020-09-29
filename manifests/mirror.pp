@@ -46,15 +46,12 @@ define pulp3_api::mirror (
       Pulp3_rpm_remote[$name],
       Pulp3_rpm_repository[$name]
     ],
-    notify      => Pulp3_rpm_publication[$repository_version],
   }
 
   # Create publication
   #@TODO repository version: Latest or integer
 
-  if $repository_version {
-    ensure_resource(pulp3_rpm_publication, $repository_version, $publications)
-  }
+  create_resources(pulp3_rpm_publication, $publications)
 
   # Create distribution
   ensure_resource(pulp3_rpm_distribution, $name, $distributions)

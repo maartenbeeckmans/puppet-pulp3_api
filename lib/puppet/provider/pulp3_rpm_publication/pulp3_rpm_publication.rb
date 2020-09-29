@@ -8,7 +8,7 @@ require 'json'
 require 'uri'
 #require 'yaml'
 
-class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::ResourceApi::SimpleProvider
+class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication
   def initialize
     #settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
     #@apiuser = settings['apiuser']
@@ -21,19 +21,102 @@ class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::Resou
     @apiport = '24817'
     @endpoint = '/pulp/api/v3/publications/rpm/rpm/'
     @property_hash = []
+    @repository_endpoint = '/pulp/api/v3/repositories/rpm/rpm/'
+    @repository_hash = []
   end
 
   def get(context)
+    if @repository_hash.empty?
+      parsed_objects = []
+      get_pulp_objects(context, @repository_endpoint).each do |repository|
+        repo_hash = Hash.new
+        repo_hash['name'] = repository['name']
+        repo_hash['pulp_href'] = repository['pulp_href']
+        repo_hash['latest_version_href'] = repository['latest_version_href']
+        parsed_objects << repo_hash
+      end
+      context.debug("Retrieved the following repositories: #{JSON.pretty_generate(parsed_objects)}")
+      @repository_hash = parsed_objects
+    end
     if @property_hash.empty?
       parsed_objects = []
       get_pulp_objects(context).each do |object|
+        context.debug("Publications before translation: #{JSON.pretty_generate(object)}")
         remote = build_hash(object)
         parsed_objects << remote
       end
-      context.debug("Retrieved the following resources: #{parsed_objects}")
+      context.debug("Retrieved the following publications: #{JSON.pretty_generate(parsed_objects)}")
       @property_hash = parsed_objects
     end
     @property_hash
+  end
+
+  def set(context,changes)
+    changes.each do |name, change|
+      # Translate latest to repository_latest_version number
+      repository = find_repository_name(name[:repository_name])
+      if name[:repository_version] == 'latest'
+        name[:repository_version] = repository['latest_version_href'].split('/').last
+      end
+      if change[:is][:repository_version] == 'latest'
+        change[:is][:repository_version] = repository['latest_version_href'].split('/').last
+      end
+      if change[:should][:repository_version] == 'latest'
+        change[:should][:repository_version] = repository['latest_version_href'].split('/').last
+      end
+
+      context.notice("changes: #{change}")
+
+      publication_exists = false
+      @property_hash.each do |publication|
+        if publication[:repository_name] == change[:should][:repository_name]
+          if publication[:repository_version] == change[:should][:repository_version]
+            context.notice("Publication for repository #{change[:should][:repository_name]} and version #{change[:should][:repository_version]} already exists")
+            publication_exists = true
+          end
+        end
+      end
+      break if publication_exists
+
+      is = if context.type.feature?('simple_get_filter')
+             change.key?(:is) ? change[:is] : (get(context, [name]) || []).find { |r| r[:name] == name }
+           else
+             change.key?(:is) ? change[:is] : (get(context) || []).find { |r| r[:name] == name }
+           end
+      context.type.check_schema(is) unless change.key?(:is)
+
+      should = change[:should]
+
+      raise 'SimpleProvider cannot be used with a Type that is not ensurable' unless context.type.ensurable?
+
+      is = SimpleProvider.create_absent(:name, name) if is.nil?
+      should = SimpleProvider.create_absent(:name, name) if should.nil?
+
+      name_hash = if context.type.namevars.length > 1
+                    # pass a name_hash containing the values of all namevars
+                    name_hash = {}
+                    context.type.namevars.each do |namevar|
+                      name_hash[namevar] = change[:should][namevar]
+                    end
+                    name_hash
+                  else
+                    name
+                  end
+
+      if is[:ensure].to_s == 'absent' && should[:ensure].to_s == 'present'
+        context.creating(name) do
+          create(context, name_hash, should)
+        end
+      elsif is[:ensure].to_s == 'present' && should[:ensure].to_s == 'present'
+        context.updating(name) do
+          update(context, name_hash, should)
+        end
+      elsif is[:ensure].to_s == 'present' && should[:ensure].to_s == 'absent'
+        context.deleting(name) do
+          delete(context, name_hash)
+        end
+      end
+    end
   end
 
   def create(context, name, should)
@@ -74,10 +157,12 @@ class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::Resou
 
   # parser functions
   def build_hash(object)
+    repository = find_repository(object['repository'])
     hash = Hash.new
     hash[:ensure] = 'present'
-    hash[:repository_version] = object['repository_version']
-    hash[:repository] = object['repository']
+    hash[:repository_name] = repository['name']
+    hash[:repository_version] = Integer(object['repository_version'].split('/').last)
+    hash[:repository_latest_version] = Integer(repository['latest_version_href'].split('/').last)
     hash[:metadata_checksum_type] = object['metadata_checksum_type']
     hash[:package_checksum_type] = object['package_checksum_type']
     hash[:pulp_href] = object['pulp_href']
@@ -87,7 +172,8 @@ class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::Resou
 
   def instance_to_hash(should)
     hash = Hash.new
-    hash['repository_version'] = should[:repository_version] unless should[:repository_version] == ''
+    repository = find_repository_name(should[:repository_name])
+    hash['repository_version'] = "#{repository['pulp_href']}#{should[:repository_version]}/"
     hash['metadata_checksum_type'] = should[:metadata_checksum_type]
     hash['package_checksum_type'] = should[:package_checksum_type]
     hash['pulp_href'] = should[:pulp_href]
@@ -96,6 +182,22 @@ class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::Resou
   end
 
   # helper methods
+  def find_repository(repository_href)
+    @repository_hash.each do |repository|
+      if repository['pulp_href'] == repository_href
+        return repository
+      end
+    end
+    return nil
+  end
+  def find_repository_name(repository_name)
+    @repository_hash.each do |repository|
+      if repository['name'] == repository_name
+        return repository
+      end
+    end
+    return nil
+  end
   def request(endpoint, method=Net::HTTP::Get, data=nil)
     uri = URI("http://#{@apihost}:#{@apiport}#{endpoint}")
     request = method.new(uri, 'Content-Type' => 'application/json')
@@ -114,9 +216,9 @@ class Puppet::Provider::Pulp3RpmPublication::Pulp3RpmPublication < Puppet::Resou
     res
   end
 
-  def get_pulp_objects(context)
+  def get_pulp_objects(context, endpoint=@endpoint)
     begin
-      response = request(@endpoint)
+      response = request(endpoint)
       context.debug("Number of objects found: '#{response['count']}'")
       context.debug("Found objects: '#{JSON.pretty_generate(response['results'])}'")
       return [] if response['count'] == '0'

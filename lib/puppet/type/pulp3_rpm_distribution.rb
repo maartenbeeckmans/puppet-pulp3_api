@@ -26,15 +26,24 @@ EOS
     },
     base_path: {
       type:      'String',
-      desc:      'The base (relative) path component of the published url. Avoid paths that                     overlap with other distribution base paths (e.g. "foo" and "foo/bar")',
+      desc:      'The base (relative) path component of the published url. Avoid paths that overlap with other distribution base paths (e.g. "foo" and "foo/bar")',
     },
     content_guard: {
       type:      'Optional[String]',
       desc:      'An optional content-guard.',
     },
-    publication: {
+    repository_name: {
       type:      'Optional[String]',
+      desc:      'Friendly name of the repository.',
+    },
+    repository_version: {
+      type:      'Variant[Integer, Undef]',
+      desc:      'Friendly version name',
+    },
+    publication_href: {
+      type:      'String',
       desc:      'Publication to be served',
+      behaviour: :read_only,
     },
     pulp_href: {
       type:      'String',

@@ -19,14 +19,20 @@ EOS
       desc:    'Whether this resource should be present or absent on the target system.',
       default: 'present',
     },
-    repository_version: {
+    repository_name: {
       type:      'String',
-      desc:      'Repository version',
+      desc:      'Friendly name of the repository.',
       behaviour: :namevar,
     },
-    repository: {
-      type:      'Optional[String]',
-      desc:      'A URI of the repository to be published.',
+    repository_version: {
+      type:      'Variant[Integer, Enum[latest]]',
+      desc:      'Friendly version name',
+      behaviour: :namevar,
+    },
+    repository_latest_version: {
+      type:      'Integer',
+      desc:      'Latest version of repository',
+      behaviour: :read_only,
     },
     metadata_checksum_type: {
       type:      'Enum[unknown, md5, sha1, sha224, sha256, sha384, sha512]',
