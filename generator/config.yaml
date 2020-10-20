@@ -1,11 +1,10 @@
 ---
 # Config used by generator
 resources:
-# Do not generate distribution, manual changes so repositoryname and version can be used to get publication
-#  - schema: rpm.RpmDistribution
-#    name: pulp3_rpm_distribution
-#    endpoint: /pulp/api/v3/distributions/rpm/rpm/
-#    namevar: name
+  - schema: rpm.RpmDistribution
+    name: pulp3_rpm_distribution
+    endpoint: /pulp/api/v3/distributions/rpm/rpm/
+    namevar: name
   - schema: rpm.RpmRemote 
     name: pulp3_rpm_remote
     endpoint: /pulp/api/v3/remotes/rpm/rpm/
@@ -14,8 +13,7 @@ resources:
     name: pulp3_rpm_repository
     endpoint: /pulp/api/v3/repositories/rpm/rpm/
     namevar: name
-# Do not generate publication, not possible with simpleprovider
-#  - schema: rpm.RpmPublication
-#    name: pulp3_rpm_publication
-#    endpoint: /pulp/api/v3/publications/rpm/rpm/
-#    namevar: repository_version
+  - schema: rpm.RpmPublication
+    name: pulp3_rpm_publication
+    endpoint: /pulp/api/v3/publications/rpm/rpm/
+    namevar: repository_version

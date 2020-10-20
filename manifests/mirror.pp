@@ -1,28 +1,35 @@
 # Create mirror
 # A mirror can have multiple publications and distributions
 define pulp3_api::mirror (
-  Stdlib::Fqdn $apihost = $pulp3_api::apihost,
-  Stdlib::Port $apiport = $pulp3_api::apiport,
-  Hash $remote = {},
-  Hash $repository = {},
-  Hash $publications = {},
-  Hash $distributions = {},
-  Optional[String] $remote_href = undef,
-  Optional[String] $repository_href = undef,
-  Optional[String] $repository_version = undef,
+  Stdlib::HTTPUrl $url,
+  String          $base_path,
+  Stdlib::Fqdn    $apihost = $pulp3_api::apihost,
+  Stdlib::Port    $apiport = $pulp3_api::apiport,
 ) {
   # Create remote
-  ensure_resource(pulp3_rpm_remote, $name, $remote)
+  pulp3_rpm_remote { "${name}-mirror":
+    url => $url,
+  }
 
   # Create repository
-  ensure_resource(pulp3_rpm_repository, $name, $repository)
+  pulp3_rpm_repository { "${name}-mirror":
+    description => 'Puppet managed repository',
+  }
+
+  # Create distribution
+  pulp3_rpm_distribution { "${name}-mirror":
+    base_path => $base_path,
+  }
 
   # Create 
   $_mirror_script_config = {
-  'api_host'        => $apihost,
-  'api_port'        => $apiport,
-  'remote_name'     => $name,
-  'repository_name' => $name,
+  'api_host'               => $apihost,
+  'api_port'               => $apiport,
+  'remote_name'            => "${name}-mirror",
+  'mirror'                 => true,
+  'repo_name'              => "${name}-mirror",
+  'distribution_name'      => "${name}-mirror",
+  'distribution_base_path' => $base_path,
   }
 
   file { "/usr/local/bin/sync_mirror_${name}.sh":
@@ -30,13 +37,12 @@ define pulp3_api::mirror (
     mode    => '0755',
     owner   => 'root',
     group   => 'root',
-    content => epp("${module_name}/sync_repository.sh.epp", $_mirror_script_config),
+    content => epp("${module_name}/mirror-publish.sh.epp", $_mirror_script_config),
     notify  => Exec["Sync mirror ${name}"],
   }
 
-  # Sync remote with repository
+  # Sync remote with repository, create publication and update distribution
   # Timeout is 0 because syncing a repository can take a long time
-  # Syncing is part of the script because the repository must be synced before the publication can be created.
   exec { "Sync mirror ${name}":
     command     => "/bin/bash -c /usr/local/bin/sync_mirror_${name}.sh",
     user        => 'root',
@@ -44,16 +50,10 @@ define pulp3_api::mirror (
     refreshonly => true,
     subscribe   => [
       Pulp3_rpm_remote[$name],
-      Pulp3_rpm_repository[$name]
+      Pulp3_rpm_repository[$name],
+      Pulp3_rpm_distribution[$name]
     ],
   }
 
-  # Create publication
-  #@TODO repository version: Latest or integer
-
-  create_resources(pulp3_rpm_publication, $publications)
-
-  # Create distribution
-  ensure_resource(pulp3_rpm_distribution, $name, $distributions)
 
 }
