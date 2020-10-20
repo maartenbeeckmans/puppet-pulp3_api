@@ -49,9 +49,9 @@ define pulp3_api::mirror (
     timeout     => 0,
     refreshonly => true,
     subscribe   => [
-      Pulp3_rpm_remote[$name],
-      Pulp3_rpm_repository[$name],
-      Pulp3_rpm_distribution[$name]
+      Pulp3_rpm_remote["${name}-mirror"],
+      Pulp3_rpm_repository["${name}-mirror"],
+      Pulp3_rpm_distribution["${name}-mirror"]
     ],
   }
 
