@@ -14,6 +14,8 @@ class pulp3_api (
   Hash         $mirrors       = {},
 )
 {
+  include resource_api
+
   $_settings_hash = {
     'apiuser' => $apiuser,
     'apipass' => $apipass,
