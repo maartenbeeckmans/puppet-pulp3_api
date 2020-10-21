@@ -6,11 +6,11 @@
 require 'puppet/resource_api/simple_provider'
 require 'json'
 require 'uri'
-#require 'yaml'
+require 'yaml'
 
 class Puppet::Provider::Pulp3RpmDistribution::Pulp3RpmDistribution < Puppet::ResourceApi::SimpleProvider
   def initialize
-    settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
+    settings = YAML.load_file('/etc/pulpapi.yaml')
     @apiuser = settings['apiuser']
     @apipass = settings['apipass']
     @apihost = settings['apihost']
