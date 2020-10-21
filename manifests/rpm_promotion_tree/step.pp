@@ -8,7 +8,7 @@ define pulp3_api::rpm_promotion_tree::step (
   Array   $next_targets = [],
   Boolean $archive      = false,
 ) {
-  create_resources(pulp3::yum_promotion_tree::repo, prefix($repositories, "${title}-"))
+  create_resources(pulp3::rpm_promotion_tree::repo, prefix($repositories, "${title}-"))
 
   # Use $next_targets to create the script
   # For every next target create the script
