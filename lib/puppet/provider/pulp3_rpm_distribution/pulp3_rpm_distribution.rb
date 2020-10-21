@@ -10,15 +10,11 @@ require 'uri'
 
 class Puppet::Provider::Pulp3RpmDistribution::Pulp3RpmDistribution < Puppet::ResourceApi::SimpleProvider
   def initialize
-    #settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
-    #@apiuser = settings['apiuser']
-    #@apipass = settings['apipass']
-    #@apihost = settings['apihost']
-    #@apiport = settings['apiport']
-    @apiuser = 'admin'
-    @apipass = 'adminpassword'
-    @apihost = 'pulp.xxs.vagrant'
-    @apiport = '24817'
+    settings = YAML.load_file('/etc/pulpapi.yaml').symbolize_keys
+    @apiuser = settings['apiuser']
+    @apipass = settings['apipass']
+    @apihost = settings['apihost']
+    @apiport = settings['apiport']
     @endpoint = '/pulp/api/v3/distributions/rpm/rpm/'
     @property_hash = []
   end
