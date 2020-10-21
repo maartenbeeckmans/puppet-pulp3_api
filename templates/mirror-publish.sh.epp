@@ -12,6 +12,7 @@
 #
 # Script syncs a repository with a remote and automatically publishes the latest version
 #
+set -ex
 
 #
 # Variables

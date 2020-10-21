@@ -11,6 +11,7 @@
 #
 # Promote content between repositories and automatically publish
 #
+set -ex
 
 #
 # Variables

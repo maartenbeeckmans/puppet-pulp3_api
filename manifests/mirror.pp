@@ -57,6 +57,4 @@ define pulp3_api::mirror (
       Pulp3_rpm_distribution["${name}-mirror"]
     ],
   }
-
-
 }
