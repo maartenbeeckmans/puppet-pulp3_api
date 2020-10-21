@@ -1,4 +1,5 @@
 define pulp3_api::rpm_promotion_tree::repo (
+  String $upstream = '',
   String $distribution_prefix = '',
   String $environment = '',
   String $releasever = '8',
