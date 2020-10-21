@@ -3,23 +3,26 @@
 define pulp3_api::mirror (
   Stdlib::HTTPUrl $url,
   String          $base_path,
-  Stdlib::Fqdn    $apihost = $pulp3_api::apihost,
-  Stdlib::Port    $apiport = $pulp3_api::apiport,
+  Hash            $remote_extra_options       = {},
+  Hash            $repository_extra_options   = {},
+  Hash            $distribution_extra_options = {},
+  Stdlib::Fqdn    $apihost                    = $pulp3_api::apihost,
+  Stdlib::Port    $apiport                    = $pulp3_api::apiport,
 ) {
   # Create remote
-  pulp3_rpm_remote { "${name}-mirror":
-    url => $url,
-  }
+  $_remote_options = { 'url' => $url }
+  $_remote_config = $_remote_options + $remote_extra_options
+  ensure_resource( 'pulp3_rpm_remote', "${name}-mirror", $_remote_config )
 
   # Create repository
-  pulp3_rpm_repository { "${name}-mirror":
-    description => 'Puppet managed repository',
-  }
+  $_repository_options = { 'description' => 'Puppet managed repository' }
+  $_repository_config = $_repository_options + $repository_extra_options
+  ensure_resource( 'pulp3_rpm_repository', "${name}-mirror", $_repository_config )
 
   # Create distribution
-  pulp3_rpm_distribution { "${name}-mirror":
-    base_path => $base_path,
-  }
+  $_distribution_options = { 'base_path' => $base_path }
+  $_distribution_config = $_distribution_options + $distribution_extra_options
+  ensure_resource( 'pulp3_rpm_distribution', "${name}-mirror", $_distribution_config )
 
   # Create 
   $_mirror_script_config = {
