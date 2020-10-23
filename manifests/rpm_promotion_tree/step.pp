@@ -11,13 +11,13 @@ define pulp3_api::rpm_promotion_tree::step (
   Boolean $archive      = false,
 ) {
   create_resources(pulp3_api::rpm_promotion_tree::repo,
-    $repositories,
+    prefix("${project}-${environment}-${releasever}-${basearch}", $repositories),
     {
       project             => $project,
       environment         => $title,
       releasever          => $releasever,
       basearch            => $basearch,
-      distribution_prefix => $distribution_prefix,
+      distribution_prefix => "${distribution_prefix}${project}/${releasever}/${basearch}"
     }
   )
 
