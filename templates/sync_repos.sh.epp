@@ -10,7 +10,8 @@
 #
 set -ex
 
-<% $repositories.each | Hash $repository | { -%>
+<% $repositories.each | $repository_name, $repository_value | { -%>
 # Printing repository
-<%= $repository %>
+repo_name: <%= $repository_name %>
+values: <%= $repository_value %> # {previous_target => centos-8-powertools}
 <% } -%>
