@@ -11,7 +11,7 @@ define pulp3_api::rpm_promotion_tree::step (
   Boolean $archive      = false,
 ) {
   create_resources(pulp3_api::rpm_promotion_tree::repo,
-    prefix("${project}-${environment}-${releasever}-${basearch}", $repositories),
+    prefix($repositories, "${project}-${environment}-${releasever}-${basearch}-"),
     {
       project             => $project,
       environment         => $title,
