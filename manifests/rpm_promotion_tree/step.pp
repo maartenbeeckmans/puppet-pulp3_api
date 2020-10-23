@@ -7,6 +7,7 @@ define pulp3_api::rpm_promotion_tree::step (
   String  $basearch,
   String  $distribution_prefix,
   String  $first_target,
+  String  $environment = $title,
   Array   $next_targets = [],
   Boolean $archive      = false,
 ) {
@@ -14,7 +15,7 @@ define pulp3_api::rpm_promotion_tree::step (
     prefix($repositories, "${project}-${environment}-${releasever}-${basearch}-"),
     {
       project             => $project,
-      environment         => $title,
+      environment         => $environment,
       releasever          => $releasever,
       basearch            => $basearch,
       distribution_prefix => "${distribution_prefix}${project}/${releasever}/${basearch}"
