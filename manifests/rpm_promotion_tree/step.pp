@@ -9,7 +9,7 @@ define pulp3_api::rpm_promotion_tree::step (
   Stdlib::Fqdn $apihost                 = $::pulp3_api::apihost,
   Stdlib::Port $apiport                 = $::pulp3_api::apiport,
   Boolean      $first_target            = false,
-  String       $previous_target         = undef,
+  Optional[String]       $previous_target         = undef,
   Integer      $retain_package_versions = 0,
   String       $environment             = $title,
 ) {
@@ -44,7 +44,7 @@ define pulp3_api::rpm_promotion_tree::step (
     $_promote_config_hash = {
       'apihost'      => $apihost,
       'apiport'      => $apiport,
-      'repositories' => prefix($repositories, "${project}-${environment}-${releasever}-${basearch}-"),
+      'repositories' => $_repositories,
     }
     file { "/usr/local/bin/promote-${previous_target}-${environment}.sh":
       ensure  => present,

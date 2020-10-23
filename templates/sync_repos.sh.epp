@@ -1,6 +1,6 @@
 <%- | String  $apihost,
       Integer $apiport,
-      Hash    $repositories,
+      $repositories, 
 | -%>
 #!/bin/bash
 # 
