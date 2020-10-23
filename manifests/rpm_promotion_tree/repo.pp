@@ -2,13 +2,11 @@
 #
 #
 define pulp3_api::rpm_promotion_tree::repo (
-  String $distribution_prefix,
-  String $project,
-  String $environment,
-  String $upstream = '',
-  String $releasever = '8',
-  String $basearch = 'x86_64',
-  Integer $retain_package_versions = 0,
+  String  $distribution_prefix,
+  Integer $retain_package_versions,
+  Boolean $first_target            = false,
+  String  $mirror                  = undef,
+  String  $previous_target         = undef,
 ) {
   # Create repository
   $_repository_config = {

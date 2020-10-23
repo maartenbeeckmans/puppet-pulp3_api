@@ -1,5 +1,4 @@
 define pulp3_api::rpm_promotion_tree (
-  String $first_target,
   Hash   $targets,
   Hash   $repositories,
   String $releasever          = '8',
@@ -10,7 +9,6 @@ define pulp3_api::rpm_promotion_tree (
   create_resources(pulp3_api::rpm_promotion_tree::step,
     $targets,
     {
-      first_target        => $first_target,
       repositories        => $repositories,
       project             => $project,
       releasever          => $releasever,
