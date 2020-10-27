@@ -32,6 +32,7 @@ repo_name=<%= $project -%>-<%= $environment -%>-<%= $releasever -%>-<%= $arch %>
 upstream=<%= $repository_value['upstream'] %>
 <% } else { -%>
 upstream=<%= $project -%>-<%= $upstream -%>-<%= $releasever -%>-<%= $arch %>-<%= $repository_name %>
+<% } -%>
 echo '---------------------------------------------------------'
 echo 'Promoting ${repo_name}'
 echo '---------------------------------------------------------'
