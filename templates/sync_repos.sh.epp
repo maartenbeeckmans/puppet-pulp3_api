@@ -1,6 +1,6 @@
 <%- | String  $apihost,
       Integer $apiport,
-      Optiona[String] $upstream,
+      String $upstream,
       Boolean $first_target,
       String $project,
       String $environment,
