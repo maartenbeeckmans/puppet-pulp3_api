@@ -16,13 +16,13 @@
 #
 # Promote content between repositories and automatically publish
 #
-set -ex 
+set -e
 
 #
 # Common variables
 #
-apihost=<%= $apihost %>
-apiport=<%= $apiport %>
+pulp_server=<%= $api_host %>
+pulp_port=<%= $api_port %>
 
 #
 # Functions
