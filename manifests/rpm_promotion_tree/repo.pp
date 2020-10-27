@@ -5,8 +5,7 @@ define pulp3_api::rpm_promotion_tree::repo (
   String  $distribution_prefix,
   Integer $retain_package_versions,
   Boolean $first_target            = false,
-  Optional[String]  $mirror                  = undef,
-  Optional[String]  $previous_target         = undef,
+  Optional[String]  $upstream                  = undef,
 ) {
   # Create repository
   $_repository_config = {

@@ -9,7 +9,7 @@ define pulp3_api::rpm_promotion_tree::step (
   Stdlib::Fqdn $apihost                 = $::pulp3_api::apihost,
   Stdlib::Port $apiport                 = $::pulp3_api::apiport,
   Boolean      $first_target            = false,
-  Optional[String]       $previous_target         = undef,
+  Optional[String]       $upstream         = undef,
   Integer      $retain_package_versions = 0,
   String       $environment             = $title,
 ) {
@@ -22,9 +22,7 @@ define pulp3_api::rpm_promotion_tree::step (
   )
   if $first_target {
     # fetch from mirrors
-    $_repositories = prefix($repositories, "${project}-${environment}-${releasever}-${basearch}-").map | $repo_name, $repo_value | {
-      $repo_value + { 'previous_target' => $repo_value['mirror'] }
-    }
+    $_repositories = prefix($repositories, "${project}-${environment}-${releasever}-${basearch}-")
     $_promote_config_hash = {
       'apihost' => $apihost,
       'apiport' => $apiport,
@@ -35,18 +33,15 @@ define pulp3_api::rpm_promotion_tree::step (
       mode    => '0755',
       content => epp("${module_name}/sync_repos.sh.epp", $_promote_config_hash),
     }
-  }
-  if $previous_target {
+  } else {
     # fetch from previous step
-    $_repositories = prefix($repositories, "${project}-${environment}-${releasever}-${basearch}-").map | $repo_name, $repo_value | {
-      $repo_value + { 'previous_target' => "${project}-${environment}-${releasever}-${basearch}-${split($repo_name, '-')[-1]}" }
-    }
+    $_repositories = prefix($repositories, "${project}-${environment}-${releasever}-${basearch}-")
     $_promote_config_hash = {
       'apihost'      => $apihost,
       'apiport'      => $apiport,
       'repositories' => $_repositories,
     }
-    file { "/usr/local/bin/promote-${previous_target}-${environment}.sh":
+    file { "/usr/local/bin/promote-${upstream}-${environment}.sh":
       ensure  => present,
       mode    => '0755',
       content => epp("${module_name}/sync_repos.sh.epp", $_promote_config_hash),
