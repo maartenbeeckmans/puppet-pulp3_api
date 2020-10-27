@@ -22,15 +22,18 @@ define pulp3_api::rpm_promotion_tree::step (
   )
 
   # Create promotion script
-  $_repositories = prefix($repositories, "${project}-${environment}-${releasever}-${basearch}-")
   $_promote_config_hash = {
     'apihost'      => $apihost,
     'apiport'      => $apiport,
     'first_target' => $first_target,
     'upstream'     => $upstream,
-    'repositories' => $_repositories,
+    'project'      => $project,
+    'environment'  => $environment,
+    'releasever'   => $releasever,
+    'basearch'     => $basearch,
+    'repositories' => $repositories,
   }
-  file { "/usr/local/bin/promote-mirrors-${environment}.sh":
+  file { "/usr/local/bin/promote-${environment}.sh":
     ensure  => present,
     mode    => '0755',
     content => epp("${module_name}/sync_repos.sh.epp", $_promote_config_hash),

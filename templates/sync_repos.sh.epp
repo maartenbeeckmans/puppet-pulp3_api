@@ -2,6 +2,10 @@
       Integer $apiport,
       Optiona[String] $upstream,
       Boolean $first_target,
+      String $project,
+      String $environment,
+      String $releasever,
+      String $basearch,
       $repositories, 
 | -%>
 #!/bin/bash
@@ -16,9 +20,24 @@ set -ex
 apihost=<%= $apihost %>
 apiport=<%= $apihost %>
 first_target=<%= $first_target %>
+project=<%= $project %>
+environment=<%= $environment %>
+releasever<%= $releasever %>
+basearch=<%= $basearch %>
 upstream=<%= $upstream %>
 
 <% $repositories.each | $repository_name, $repository_value | { -%>
-repo_name: <%= $repository_name %>
-values: <%= $repository_value %>
+repo_name=<%= $project -%>-<%= $environment -%>-<%= $releasever -%>-<%= $arch %>-<%= $repository_name %>
+<% if $first_target { -%>
+upstream=<%= $repository_value['upstream'] %>
+<% } else { -%>
+upstream=<%= $project -%>-<%= $upstream -%>-<%= $releasever -%>-<%= $arch %>-<%= $repository_name %>
+echo '---------------------------------------------------------'
+echo 'Promoting ${repo_name}'
+echo '---------------------------------------------------------'
+
+<% if $upstream { -%>
+echo 'Syncing from remote'
 <% } -%>
+<% } -%>
+
