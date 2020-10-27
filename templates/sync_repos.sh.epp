@@ -1,5 +1,7 @@
 <%- | String  $apihost,
       Integer $apiport,
+      Optiona[String] $upstream,
+      Boolean $first_target,
       $repositories, 
 | -%>
 #!/bin/bash
@@ -10,8 +12,13 @@
 #
 set -ex
 
+# Common variables
+apihost=<%= $apihost %>
+apiport=<%= $apihost %>
+first_target=<%= $first_target %>
+upstream=<%= $upstream %>
+
 <% $repositories.each | $repository_name, $repository_value | { -%>
-# Printing repository
 repo_name: <%= $repository_name %>
-values: <%= $repository_value %> # {previous_target => centos-8-powertools}
+values: <%= $repository_value %>
 <% } -%>
