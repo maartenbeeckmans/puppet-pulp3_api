@@ -1,44 +1,122 @@
-<%- | String  $apihost,
-      Integer $apiport,
-      String $upstream,
-      Boolean $first_target,
-      String $project,
-      String $environment,
-      String $releasever,
-      String $basearch,
-      $repositories, 
-| -%>
+<%- |  $apihost,
+       $apiport,
+       $upstream,
+       $first_target,
+       $project,
+       $environment,
+       $releasever,
+       $distribution_prefix,
+       $basearch,
+
+       $repositories, 
+| -%> 
 #!/bin/bash
 # 
 # Managed by Puppet, do not edit manually
 #
 # Promote content between repositories and automatically publish
 #
-set -ex
+set -ex 
 
+#
 # Common variables
+#
 apihost=<%= $apihost %>
-apiport=<%= $apihost %>
-first_target=<%= $first_target %>
-project=<%= $project %>
-environment=<%= $environment %>
-releasever<%= $releasever %>
-basearch=<%= $basearch %>
-upstream=<%= $upstream %>
+apiport=<%= $apiport %>
 
-<% $repositories.each | $repository_name, $repository_value | { -%>
-repo_name=<%= $project -%>-<%= $environment -%>-<%= $releasever -%>-<%= $arch %>-<%= $repository_name %>
-<% if $first_target { -%>
-upstream=<%= $repository_value['upstream'] %>
-<% } else { -%>
-upstream=<%= $project -%>-<%= $upstream -%>-<%= $releasever -%>-<%= $arch %>-<%= $repository_name %>
-<% } -%>
-echo '---------------------------------------------------------'
-echo 'Promoting ${repo_name}'
-echo '---------------------------------------------------------'
+#
+# Functions
+#
+function wait_until_finished {
+  local task=${1}
+  echo "Waiting until ${task} is finished"
+  while true
+  do
+    local state=$(curl --netrc -s -H "Content-Type: application/json" "http://${pulp_server}:${pulp_port}${task}" | jq -r '.state')
+    case ${state} in
+      failed|canceled)
+        echo "Task in final state: ${state}"
+        exit 1
+        ;;
+      completed)
+        echo "Task finished"
+        created_resource=$(curl --netrc -s -H "Content-Type: application/json" "http://${pulp_server}:${pulp_port}${task}" | jq -r '.created_resources|.[0]')
+        break
+        ;;
+      *)
+        echo "Still waiting..."
+        sleep 1
+        ;;
+    esac
+  done
+}
 
-<% if $upstream { -%>
-echo 'Syncing from remote'
-<% } -%>
-<% } -%>
+#
+# Script prober
+#
 
+<% $repositories.each | $repository_name, $repository_value | { -%> 
+target_repo_name=<%= $project -%>-<%= $environment -%>-<%= $releasever -%>-<%= $basearch %>-<%= $repository_name %>
+distribution_name=<%= $project -%>-<%= $environment -%>-<%= $releasever -%>-<%= $basearch %>-<%= $repository_name %>
+distribution_base_path=<%= $distribution_prefix -%><%= $environment -%>/<%= $releasever -%>/<%= $basearch %>/<%= $repository_name %>
+<% if $first_target { -%> 
+# Using mirror
+source_repo_name=<%= $repository_value['upstream'] %>
+<% } else { -%> 
+# Using previous target
+source_repo_name=<%= $project -%>-<%= $upstream -%>-<%= $releasever -%>-<%= $basearch %>-<%= $repository_name %>
+<% } -%> 
+
+<% if $upstream { -%> 
+echo 'Syncing from upstream'
+echo
+echo "--------------------------------------------------"
+echo "Getting packages in ${source_repo_name}"
+echo "--------------------------------------------------"
+echo
+source_repo_version_href=$(curl -s --netrc "http://${pulp_server}:${pulp_port}/pulp/api/v3/repositories/rpm/rpm/?name=${source_repo_name}" | jq '.results|.[0]|.latest_version_href')
+
+echo
+echo "--------------------------------------------------"
+echo "Getting packages in ${dest_repo_name}"
+echo "--------------------------------------------------"
+echo
+dest_repo_href=$(curl -s --netrc "http://${pulp_server}:${pulp_port}/pulp/api/v3/repositories/rpm/rpm/?name=${dest_repo_name}" | jq '.results|.[0]|.pulp_href')
+
+echo
+echo "--------------------------------------------------"
+echo "Syncing repositories"
+echo "--------------------------------------------------"
+echo
+task_href=$(curl -s -L --netrc -X POST -H "Content-Type: application/json" "http://localhost:24817/pulp/api/v3/rpm/copy/" -d "{\"config\":[{\"source_repo_version\":\"${source_repo_version_href//'"'/''}\",\"dest_repo\":\"${dest_repo_href//'"'/''}\"}],\"dependency_solving\":true}" | jq '.task')
+wait_until_finished ${task_href//'"'/''}
+repo_latest_version_href=$(curl -s --netrc "http://${pulp_server}:${pulp_port}/pulp/api/v3/repositories/rpm/rpm/?name=${dest_repo_name}" | jq '.results|.[0]|.latest_version_href')
+<% } else { -%> 
+echo 'No upsteam present, using latest version href of repo'
+echo
+echo "--------------------------------------------------"
+echo "Getting latest version href"
+echo "--------------------------------------------------"
+echo
+repo_latest_version_href=$(curl -s --netrc "http://${pulp_server}:${pulp_port}/pulp/api/v3/repositories/rpm/rpm/?name=${target_repo_name}" | jq '.results|.[0]|.latest_version_href')
+<% } -%> 
+
+echo
+echo "--------------------------------------------------"
+echo "Creating publication"
+echo "--------------------------------------------------"
+echo
+task_href=$(curl -s --netrc -L -X POST -H "Content-Type: application/json" "http://${pulp_server}:${pulp_port}/pulp/api/v3/publications/rpm/rpm/" -d "{\"repository_version\": \"${repo_latest_version_href//'"'/''}\"}" | jq '.task')
+wait_until_finished ${task_href//'"'/''}
+publication_href=${created_resource}
+
+echo
+echo "--------------------------------------------------"
+echo "Updating distribution"
+echo "--------------------------------------------------"
+echo
+distribution_href=$(curl -s --netrc "http://${pulp_server}:${pulp_port}/pulp/api/v3/distributions/rpm/rpm/?name=${distribution_name}" | jq '.results|.[0]|.pulp_href')
+task_href=$(curl -s --netrc -L -X PUT -H "Content-Type: application/json" "http://${pulp_server}:${pulp_port}${distribution_href//'"'/''}" -d "{\"base_path\": \"${distribution_base_path}\", \"name\": \"${distribution_name}\", \"publication\": \"${publication_href//'"'/''}\"}" | jq '.task')
+wait_until_finished ${task_href//'"'/''}
+echo "COMPLETED SUCCESSFULLY"
+<% } -%>

@@ -23,15 +23,16 @@ define pulp3_api::rpm_promotion_tree::step (
 
   # Create promotion script
   $_promote_config_hash = {
-    'apihost'      => $apihost,
-    'apiport'      => $apiport,
-    'first_target' => $first_target,
-    'upstream'     => $upstream,
-    'project'      => $project,
-    'environment'  => $environment,
-    'releasever'   => $releasever,
-    'basearch'     => $basearch,
-    'repositories' => $repositories,
+    'apihost'             => $apihost,
+    'apiport'             => $apiport,
+    'first_target'        => $first_target,
+    'upstream'            => $upstream,
+    'project'             => $project,
+    'environment'         => $environment,
+    'releasever'          => $releasever,
+    'basearch'            => $basearch,
+    'distribution_prefix' => $distribution_prefix,
+    'repositories'        => $repositories,
   }
   file { "/usr/local/bin/promote-${environment}.sh":
     ensure  => present,
