@@ -67,7 +67,8 @@ source_repo_name=<%= $repository_value['upstream'] %>
 source_repo_name=<%= $project -%>-<%= $upstream -%>-<%= $releasever -%>-<%= $basearch %>-<%= $repository_name %>
 <% } -%> 
 
-<% if $upstream { -%> 
+<%# If upstream environment or upstream repository (mirror) -%>
+<% if $upstream or $repository_value['upstream'] != 'undef' { -%>
 echo 'Syncing from upstream'
 echo
 echo "--------------------------------------------------"
