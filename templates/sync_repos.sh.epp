@@ -21,8 +21,8 @@ set -e
 #
 # Common variables
 #
-pulp_server=<%= $api_host %>
-pulp_port=<%= $api_port %>
+pulp_server=<%= $apihost %>
+pulp_port=<%= $apiport %>
 
 #
 # Functions
