@@ -3,6 +3,7 @@
 define pulp3_api::mirror (
   Stdlib::HTTPUrl $url,
   String          $base_path,
+  Boolean         $mirror                     = true,
   Hash            $remote_extra_options       = {},
   Hash            $repository_extra_options   = {},
   Hash            $distribution_extra_options = {},
@@ -29,7 +30,7 @@ define pulp3_api::mirror (
   'api_host'               => $apihost,
   'api_port'               => $apiport,
   'remote_name'            => "${name}-mirror",
-  'mirror'                 => true,
+  'mirror'                 => $mirror,
   'repo_name'              => "${name}-mirror",
   'distribution_name'      => "${name}-mirror",
   'distribution_base_path' => $base_path,
